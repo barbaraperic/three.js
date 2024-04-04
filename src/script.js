@@ -1,9 +1,34 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import imageSource from '../static/textures/door/color.jpg'
 
-/**
- * Base
- */
+const loadingManager = new THREE.LoadingManager()
+
+loadingManager.onStart = () => {
+  console.log('on start')
+}
+
+loadingManager.onLoad = () => {
+  console.log('on load')
+}
+
+loadingManager.onProgress = () => {
+  console.log('on progress')
+}
+
+loadingManager.onError = () => {
+  console.log('on error')
+}
+
+const textureLoader = new THREE.TextureLoader(loadingManager)
+const colorTexture = textureLoader.load('/textures/door/color.jpg')
+const alphaTexture = textureLoader.load('/textures/door/alpha.jpg')
+const ambientTexture = textureLoader.load('/textures/door/ambientOcclusion.jpg')
+const heightTexture = textureLoader.load('/textures/door/height.jpg')
+const metalTexture = textureLoader.load('/textures/door/metalness.jpg')
+const normalTexture = textureLoader.load('/textures/door/normal.jpg')
+const roughTexture = textureLoader.load('/textures/door/roughness.jpg')
+
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
 
@@ -13,19 +38,18 @@ const scene = new THREE.Scene()
 /**
  * Object
  */
-const geometry = new THREE.BufferGeometry()
+const geometry = new THREE.BoxGeometry(1, 1, 1)
 
-const count = 50
-const positionsArray = new Float32Array(count * 3 * 3)
-for (let i = 0; i < count * 3 * 3; i++) {
-  positionsArray[i] = (Math.random() - 0.5) * 4
-}
-const positionsAttribute = new THREE.BufferAttribute(positionsArray, 3)
-geometry.setAttribute('position', positionsAttribute)
+// const count = 5
+// for (let i = 0; i < count * 3 * 3; i++) {
+//   positionsArray[i] = (Math.random() - 0.5) * 4
+// }
+// const positionsArray = new Float32Array([0, 0, 0, 0, 1, 0, 1, 0, 0])
+// const positionsAttribute = new THREE.BufferAttribute(positionsArray, 3)
+// geometry.setAttribute('position', positionsAttribute)
 
 const material = new THREE.MeshBasicMaterial({
-  color: 0xff0000,
-  wireframe: true,
+  map: alphaTexture,
 })
 
 const mesh = new THREE.Mesh(geometry, material)
