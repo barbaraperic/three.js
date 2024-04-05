@@ -1,33 +1,5 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-import imageSource from '../static/textures/door/color.jpg'
-
-const loadingManager = new THREE.LoadingManager()
-
-loadingManager.onStart = () => {
-  console.log('on start')
-}
-
-loadingManager.onLoad = () => {
-  console.log('on load')
-}
-
-loadingManager.onProgress = () => {
-  console.log('on progress')
-}
-
-loadingManager.onError = () => {
-  console.log('on error')
-}
-
-const textureLoader = new THREE.TextureLoader(loadingManager)
-const colorTexture = textureLoader.load('/textures/door/color.jpg')
-const alphaTexture = textureLoader.load('/textures/door/alpha.jpg')
-const ambientTexture = textureLoader.load('/textures/door/ambientOcclusion.jpg')
-const heightTexture = textureLoader.load('/textures/door/height.jpg')
-const metalTexture = textureLoader.load('/textures/door/metalness.jpg')
-const normalTexture = textureLoader.load('/textures/door/normal.jpg')
-const roughTexture = textureLoader.load('/textures/door/roughness.jpg')
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
@@ -38,26 +10,38 @@ const scene = new THREE.Scene()
 /**
  * Object
  */
-const geometry = new THREE.BoxGeometry(1, 1, 1)
 
-// const count = 5
-// for (let i = 0; i < count * 3 * 3; i++) {
-//   positionsArray[i] = (Math.random() - 0.5) * 4
-// }
-// const positionsArray = new Float32Array([0, 0, 0, 0, 1, 0, 1, 0, 0])
-// const positionsAttribute = new THREE.BufferAttribute(positionsArray, 3)
-// geometry.setAttribute('position', positionsAttribute)
-
-const material = new THREE.MeshBasicMaterial({
-  map: alphaTexture,
+// SPHERE
+const sphereGeometry = new THREE.SphereGeometry(1, 16, 16)
+const sphereMaterial = new THREE.MeshBasicMaterial({
+  color: 0xffff00,
+  wireframe: true,
 })
+const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial)
+sphere.position.x = 2
 
-const mesh = new THREE.Mesh(geometry, material)
-scene.add(mesh)
+// PLANE
+const planeGeometry = new THREE.PlaneGeometry(1, 1)
+const planeMaterial = new THREE.MeshBasicMaterial({
+  color: 0xffff00,
+  side: THREE.DoubleSide,
+})
+const plane = new THREE.Mesh(planeGeometry, planeMaterial)
 
-/**
- * Sizes
- */
+// TORUS
+const torusGeometry = new THREE.TorusGeometry(1, 0.3, 5, 100)
+const torusMaterial = new THREE.MeshBasicMaterial({
+  color: 0xffff00,
+  wireframe: true,
+})
+const torus = new THREE.Mesh(torusGeometry, torusMaterial)
+torus.position.x = -2
+
+// SCENE
+scene.add(torus)
+scene.add(sphere)
+scene.add(plane)
+
 const sizes = {
   width: window.innerWidth,
   height: window.innerHeight,
@@ -77,9 +61,6 @@ window.addEventListener('resize', () => {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 })
 
-/**
- * Camera
- */
 // Base camera
 const camera = new THREE.PerspectiveCamera(
   75,
@@ -87,16 +68,13 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   100
 )
-camera.position.z = 3
+camera.position.z = 5
 scene.add(camera)
 
 // Controls
 const controls = new OrbitControls(camera, canvas)
 controls.enableDamping = true
 
-/**
- * Renderer
- */
 const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
 })
