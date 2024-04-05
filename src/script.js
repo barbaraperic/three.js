@@ -1,5 +1,41 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import GUI from 'lil-gui'
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js'
+
+const gui = new GUI()
+
+const loadingManager = new THREE.LoadingManager()
+
+loadingManager.onStart = () => {
+  console.log('on start')
+}
+
+loadingManager.onLoad = () => {
+  console.log('on load')
+}
+
+loadingManager.onProgress = () => {
+  console.log('on progress')
+}
+
+loadingManager.onError = () => {
+  console.log('on error')
+}
+
+const textureLoader = new THREE.TextureLoader(loadingManager)
+const colorTexture = textureLoader.load('/textures/door/color.jpg')
+const alphaTexture = textureLoader.load('/textures/door/alpha.jpg')
+const ambientTexture = textureLoader.load('/textures/door/ambientOcclusion.jpg')
+const heightTexture = textureLoader.load('/textures/door/height.jpg')
+const metalTexture = textureLoader.load('/textures/door/metalness.jpg')
+const normalTexture = textureLoader.load('/textures/door/normal.jpg')
+const roughTexture = textureLoader.load('/textures/door/roughness.jpg')
+const matcapTexture = textureLoader.load('/textures/matcaps/3.png')
+const gradientTexture = textureLoader.load('/textures/gradients/3.jpg')
+
+colorTexture.colorSpace = THREE.SRGBColorSpace
+matcapTexture.colorSpace = THREE.SRGBColorSpace
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
@@ -7,40 +43,76 @@ const canvas = document.querySelector('canvas.webgl')
 // Scene
 const scene = new THREE.Scene()
 
-/**
- * Object
- */
+// const material = new THREE.MeshBasicMaterial()
+// material.map = colorTexture
+// material.side = THREE.DoubleSide
+// material.color = new THREE.Color('skyblue')
+// material.transparent = true
+// material.alphaMap = 0.5
+
+// const material = new THREE.MeshNormalMaterial()
+// material.flatShading = true
+
+// const material = new THREE.MeshMatcapMaterial()
+// material.matcap = matcapTexture
+
+// const material = new THREE.MeshDepthMaterial()
+
+// const material = new THREE.MeshLambertMaterial()
+// add light
+
+// const material = new THREE.MeshPhongMaterial()
+// material.shininess = 100
+// material.specular = new THREE.Color(0x1188ff )
+
+// const material = new THREE.MeshToonMaterial()
+// gradientTexture.minFilter = THREE.NearestFilter
+// gradientTexture.magFilter = THREE.NearestFilter
+// gradientTexture.generateMipmaps = false // for performace
+// material.gradientMap = gradientTexture
+
+const material = new THREE.MeshStandardMaterial()
+material.metalness = 0.7
+material.roughness = 0.2
+
+gui.add(material, 'metalness').min(0).max(1).step(0.0001)
+gui.add(material, 'roughness').min(0).max(1).step(0.0001)
 
 // SPHERE
-const sphereGeometry = new THREE.SphereGeometry(1, 16, 16)
-const sphereMaterial = new THREE.MeshBasicMaterial({
-  color: 0xffff00,
-  wireframe: true,
-})
-const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial)
-sphere.position.x = 2
+const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.5, 16, 16), material)
+sphere.position.x = 1.5
 
 // PLANE
-const planeGeometry = new THREE.PlaneGeometry(1, 1)
-const planeMaterial = new THREE.MeshBasicMaterial({
-  color: 0xffff00,
-  side: THREE.DoubleSide,
-})
-const plane = new THREE.Mesh(planeGeometry, planeMaterial)
+const plane = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), material)
 
 // TORUS
-const torusGeometry = new THREE.TorusGeometry(1, 0.3, 5, 100)
-const torusMaterial = new THREE.MeshBasicMaterial({
-  color: 0xffff00,
-  wireframe: true,
-})
-const torus = new THREE.Mesh(torusGeometry, torusMaterial)
-torus.position.x = -2
+
+const torus = new THREE.Mesh(
+  new THREE.TorusGeometry(0.3, 0.2, 16, 32),
+  material
+)
+torus.position.x = -1.5
 
 // SCENE
-scene.add(torus)
-scene.add(sphere)
-scene.add(plane)
+scene.add(torus, sphere, plane)
+
+// const ambientLight = new THREE.AmbientLight(0xffffff, 1)
+// scene.add(ambientLight)
+
+// const pointLight = new THREE.PointLight(0xffffff, 30)
+// pointLight.position.x = 2
+// pointLight.position.y = 3
+// pointLight.position.z = 4
+
+// scene.add(pointLight)
+
+const rgbeLoader = new RGBELoader()
+rgbeLoader.load('./textures/environmentMap/2k.hdr', (environmentMap) => {
+  environmentMap.mapping = THREE.EquirectangularReflectionMapping
+
+  scene.background = environmentMap
+  scene.environment = environmentMap
+})
 
 const sizes = {
   width: window.innerWidth,
@@ -68,7 +140,7 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   100
 )
-camera.position.z = 5
+camera.position.z = 3
 scene.add(camera)
 
 // Controls
@@ -88,6 +160,14 @@ const clock = new THREE.Clock()
 
 const tick = () => {
   const elapsedTime = clock.getElapsedTime()
+
+  sphere.rotation.y = 0.1 * elapsedTime
+  plane.rotation.y = 0.1 * elapsedTime
+  torus.rotation.y = 0.1 * elapsedTime
+
+  sphere.rotation.x = -0.15 * elapsedTime
+  plane.rotation.x = -0.15 * elapsedTime
+  torus.rotation.x = -0.15 * elapsedTime
 
   // Update controls
   controls.update()
